@@ -252,12 +252,15 @@ ecma_op_set_mutable_binding (ecma_object_t *lex_env_p, /**< lexical environment 
 
     ecma_value_t completion = ecma_op_object_put (binding_obj_p,
                                                   name_p,
-                                                  value,
-                                                  is_strict);
+                                                  value);
 
     if (ECMA_IS_VALUE_ERROR (completion))
     {
       return completion;
+    }
+    if (ecma_is_value_false (completion))
+    {
+      return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
     }
 
     JERRY_ASSERT (ecma_is_value_boolean (completion));
@@ -367,8 +370,7 @@ ecma_op_delete_binding (ecma_object_t *lex_env_p, /**< lexical environment */
     JERRY_ASSERT (ecma_get_lex_env_type (lex_env_p) == ECMA_LEXICAL_ENVIRONMENT_THIS_OBJECT_BOUND);
 
     ecma_object_t *binding_obj_p = ecma_get_lex_env_binding_object (lex_env_p);
-
-    return ecma_op_object_delete (binding_obj_p, name_p, false);
+    return ecma_op_object_delete (binding_obj_p, name_p);
   }
 } /* ecma_op_delete_binding */
 

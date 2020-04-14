@@ -189,8 +189,7 @@ opfunc_set_accessor (bool is_getter, /**< is getter accessor */
  */
 ecma_value_t
 vm_op_delete_prop (ecma_value_t object, /**< base object */
-                   ecma_value_t property, /**< property name */
-                   bool is_strict) /**< strict mode */
+                   ecma_value_t property) /**< property name */
 {
 #if !ENABLED (JERRY_ES2015)
   if (ecma_is_value_undefined (object))
@@ -220,7 +219,7 @@ vm_op_delete_prop (ecma_value_t object, /**< base object */
   ecma_object_t *obj_p = ecma_get_object_from_value (obj_value);
   JERRY_ASSERT (!ecma_is_lexical_environment (obj_p));
 
-  ecma_value_t delete_op_ret = ecma_op_object_delete (obj_p, name_string_p, is_strict);
+  ecma_value_t delete_op_ret = ecma_op_object_delete (obj_p, name_string_p);
   JERRY_ASSERT (ecma_is_value_boolean (delete_op_ret) || ECMA_IS_VALUE_ERROR (delete_op_ret));
   ecma_deref_object (obj_p);
   ecma_deref_ecma_string (name_string_p);

@@ -290,12 +290,15 @@ ecma_op_put_value_lex_env_base (ecma_object_t *lex_env_p, /**< lexical environme
         {
           ecma_value_t completion = ecma_op_object_put (binding_obj_p,
                                                         name_p,
-                                                        value,
-                                                        is_strict);
+                                                        value);
 
           if (ECMA_IS_VALUE_ERROR (completion))
           {
             return completion;
+          }
+          if (ecma_is_value_false (completion)&& is_strict)
+          {
+            return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
           }
 
           JERRY_ASSERT (ecma_is_value_boolean (completion));
@@ -327,8 +330,7 @@ ecma_op_put_value_lex_env_base (ecma_object_t *lex_env_p, /**< lexical environme
 
   ecma_value_t completion = ecma_op_object_put (ecma_builtin_get_global (),
                                                 name_p,
-                                                value,
-                                                false);
+                                                value);
 
   JERRY_ASSERT (ecma_is_value_boolean (completion));
 

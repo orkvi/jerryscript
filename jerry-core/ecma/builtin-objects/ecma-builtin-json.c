@@ -660,8 +660,8 @@ ecma_builtin_json_internalize_property (ecma_object_t *reviver_p, /**< reviver f
       if (ecma_is_value_undefined (result))
       {
         ecma_value_t delete_val = ecma_op_general_object_delete (object_p,
-                                                                 property_name_p,
-                                                                 false);
+                                                                 property_name_p);
+
         JERRY_ASSERT (ecma_is_value_boolean (delete_val));
       }
       /* 3.d.iii.4 */

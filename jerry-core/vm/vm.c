@@ -216,8 +216,7 @@ vm_op_set_value (ecma_value_t object, /**< base object */
   {
     completion_value = ecma_op_object_put (object_p,
                                            property_p,
-                                           value,
-                                           is_strict);
+                                           value);
   }
   else
   {
@@ -2390,10 +2389,11 @@ vm_loop (vm_frame_ctx_t *frame_ctx_p) /**< frame context */
         }
         case VM_OC_PROP_DELETE:
         {
-          result = vm_op_delete_prop (left_value, right_value, is_strict);
+          result = vm_op_delete_prop (left_value, right_value);
 
-          if (ECMA_IS_VALUE_ERROR (result))
+          if (ecma_is_value_false (result) && is_strict)
           {
+            result = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
             goto error;
           }
 

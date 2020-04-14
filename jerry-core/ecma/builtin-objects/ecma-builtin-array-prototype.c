@@ -105,8 +105,16 @@ ecma_builtin_array_prototype_helper_set_length (ecma_object_t *object, /**< obje
   ecma_value_t length_value = ecma_make_number_value (length);
   ecma_value_t ret_value = ecma_op_object_put (object,
                                                ecma_get_magic_string (LIT_MAGIC_STRING_LENGTH),
-                                               length_value,
-                                               true);
+                                               length_value);
+  /*if (ECMA_IS_VALUE_ERROR (ret_value))
+  {
+    return ret_value;
+  }*/
+  if (ret_value == ECMA_VALUE_FALSE)
+  {
+    ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+    return ret_value;
+  }
 
   ecma_free_value (length_value);
 
@@ -438,11 +446,12 @@ ecma_builtin_array_prototype_object_pop (ecma_object_t *obj_p, /**< array object
   }
 
   /* 5.c */
-  ecma_value_t del_value = ecma_op_object_delete_by_uint32_index (obj_p, len, true);
+  ecma_value_t del_value = ecma_op_object_delete_by_uint32_index (obj_p, len);
 
-  if (ECMA_IS_VALUE_ERROR (del_value))
+  if (ecma_is_value_false (del_value))
   {
     ecma_free_value (get_value);
+    del_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
     return del_value;
   }
 
@@ -512,10 +521,14 @@ ecma_builtin_array_prototype_object_push (const ecma_value_t *argument_list_p, /
   for (uint32_t index = 0; index < arguments_number; index++, n++)
   {
     /* 5.b */
-    ecma_value_t put_value = ecma_op_object_put_by_number_index (obj_p, n, argument_list_p[index], true);
-
+    ecma_value_t put_value = ecma_op_object_put_by_number_index (obj_p, n, argument_list_p[index]);
     if (ECMA_IS_VALUE_ERROR (put_value))
     {
+      return put_value;
+    }
+    if (ecma_is_value_false (put_value))
+    {
+      put_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       return put_value;
     }
   }
@@ -620,54 +633,73 @@ ecma_builtin_array_prototype_object_reverse (ecma_value_t this_arg, /**< this ar
     /* 6.h */
     if (lower_exist && upper_exist)
     {
-      ecma_value_t outer_put_value = ecma_op_object_put (obj_p, lower_str_p, upper_value, true);
-
+      ecma_value_t outer_put_value = ecma_op_object_put (obj_p, lower_str_p, upper_value);
       if (ECMA_IS_VALUE_ERROR (outer_put_value))
       {
-        goto clean_up;
+        return outer_put_value;
+      }
+      if (ecma_is_value_false (outer_put_value))
+      {
+        outer_put_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+        return outer_put_value;
       }
 
-      ecma_value_t inner_put_value = ecma_op_object_put (obj_p, upper_str_p, lower_value, true);
-
+      ecma_value_t inner_put_value = ecma_op_object_put (obj_p, upper_str_p, lower_value);
       if (ECMA_IS_VALUE_ERROR (inner_put_value))
       {
-        goto clean_up;
+        return inner_put_value;
+      }
+      if (ecma_is_value_false (inner_put_value))
+      {
+        inner_put_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+        return inner_put_value;
       }
     }
     /* 6.i */
     else if (!lower_exist && upper_exist)
     {
-      ecma_value_t put_value = ecma_op_object_put (obj_p, lower_str_p, upper_value, true);
+      ecma_value_t put_value = ecma_op_object_put (obj_p, lower_str_p, upper_value);
 
       if (ECMA_IS_VALUE_ERROR (put_value))
       {
-        goto clean_up;
+        return put_value;
+      }
+      if (ecma_is_value_false (put_value))
+      {
+        put_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+        return put_value;
       }
 
-      ecma_value_t del_value = ecma_op_object_delete (obj_p, upper_str_p, true);
+      ecma_value_t del_value = ecma_op_object_delete (obj_p, upper_str_p);
 
       JERRY_ASSERT (ECMA_IS_VALUE_ERROR (del_value) || ecma_is_value_boolean (del_value));
 
-      if (ECMA_IS_VALUE_ERROR (del_value))
+      if (ecma_is_value_false (del_value))
       {
-        goto clean_up;
+        del_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+        return del_value;
       }
     }
     /* 6.j */
     else if (lower_exist)
     {
-      ecma_value_t del_value = ecma_op_object_delete (obj_p, lower_str_p, true);
+      ecma_value_t del_value = ecma_op_object_delete (obj_p, lower_str_p);
 
-      if (ECMA_IS_VALUE_ERROR (del_value))
+      if (ecma_is_value_false (del_value))
       {
-        goto clean_up;
+        del_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+        return del_value;
       }
 
-      ecma_value_t put_value = ecma_op_object_put (obj_p, upper_str_p, lower_value, true);
-
+      ecma_value_t put_value = ecma_op_object_put (obj_p, upper_str_p, lower_value);
       if (ECMA_IS_VALUE_ERROR (put_value))
       {
-        goto clean_up;
+        return put_value;
+      }
+      if (ecma_is_value_false (put_value))
+      {
+        put_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+        return put_value;
       }
     }
 
@@ -762,28 +794,38 @@ ecma_builtin_array_prototype_object_shift (ecma_object_t *obj_p, /**< array obje
     if (ecma_is_value_found (curr_value))
     {
       /* 7.d.i, 7.d.ii */
-      operation_value = ecma_op_object_put_by_uint32_index (obj_p, to, curr_value, true);
+      operation_value = ecma_op_object_put_by_uint32_index (obj_p, to, curr_value);
       ecma_free_value (curr_value);
+      if (ECMA_IS_VALUE_ERROR (operation_value))
+      {
+        return operation_value;
+      }
+      if (ecma_is_value_false (operation_value))
+      {
+        return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+      }
     }
     else
     {
       /* 7.e.i */
-      operation_value = ecma_op_object_delete_by_uint32_index (obj_p, to, true);
+      operation_value = ecma_op_object_delete_by_uint32_index (obj_p, to);
     }
 
-    if (ECMA_IS_VALUE_ERROR (operation_value))
+    if (ecma_is_value_false (operation_value))
     {
       ecma_free_value (first_value);
+      operation_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       return operation_value;
     }
   }
 
   /* 8. */
-  ecma_value_t del_value = ecma_op_object_delete_by_uint32_index (obj_p, --len, true);
+  ecma_value_t del_value = ecma_op_object_delete_by_uint32_index (obj_p, --len);
 
-  if (ECMA_IS_VALUE_ERROR (del_value))
+  if (ecma_is_value_false (del_value))
   {
     ecma_free_value (first_value);
+    del_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
     return del_value;
   }
 
@@ -1161,11 +1203,16 @@ ecma_builtin_array_prototype_object_sort (ecma_value_t this_arg, /**< this argum
   /* Put sorted values to the front of the array. */
   for (uint32_t index = 0; index < copied_num; index++)
   {
-    ecma_value_t put_value = ecma_op_object_put_by_uint32_index (obj_p, index, values_buffer[index], true);
+    ecma_value_t put_value = ecma_op_object_put_by_uint32_index (obj_p, index, values_buffer[index]);
 
     if (ECMA_IS_VALUE_ERROR (put_value))
     {
       goto clean_up;
+    }
+
+    if (ecma_is_value_false (put_value))
+    {
+      return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
     }
   }
 
@@ -1201,10 +1248,11 @@ clean_up:
 
     if (index >= copied_num && index < len)
     {
-      ecma_value_t del_value = ecma_op_object_delete (obj_p, property_name_p, true);
+      ecma_value_t del_value = ecma_op_object_delete (obj_p, property_name_p);
 
-      if (ECMA_IS_VALUE_ERROR (del_value))
+      if (ecma_is_value_false (del_value))
       {
+        del_value =ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
         ecma_collection_free (array_index_props_p);
         return del_value;
       }
@@ -1387,18 +1435,23 @@ ecma_builtin_array_prototype_object_splice (const ecma_value_t args[], /**< argu
         if (ecma_is_value_found (get_value))
         {
           /* 12.b.iv */
-          operation_value = ecma_op_object_put_by_uint32_index (obj_p, to, get_value, true);
+          operation_value = ecma_op_object_put_by_uint32_index (obj_p, to, get_value);
           ecma_free_value (get_value);
         }
         else
         {
           /* 12.b.v */
-          operation_value = ecma_op_object_delete_by_uint32_index (obj_p, to, true);
+          operation_value = ecma_op_object_delete_by_uint32_index (obj_p, to);
         }
-
         if (ECMA_IS_VALUE_ERROR (operation_value))
         {
           ecma_deref_object (new_array_p);
+          return operation_value;
+        }
+        if (ecma_is_value_false (operation_value))
+        {
+          ecma_deref_object (new_array_p);
+          operation_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
           return operation_value;
         }
       }
@@ -1406,10 +1459,11 @@ ecma_builtin_array_prototype_object_splice (const ecma_value_t args[], /**< argu
       /* 12.d */
       for (k = len; k > new_len; k--)
       {
-        ecma_value_t del_value = ecma_op_object_delete_by_uint32_index (obj_p, k - 1, true);
+        ecma_value_t del_value = ecma_op_object_delete_by_uint32_index (obj_p, k - 1);
 
-        if (ECMA_IS_VALUE_ERROR (del_value))
+        if (ecma_is_value_false (del_value))
         {
+          del_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
           ecma_deref_object (new_array_p);
           return del_value;
         }
@@ -1438,18 +1492,23 @@ ecma_builtin_array_prototype_object_splice (const ecma_value_t args[], /**< argu
         if (ecma_is_value_found (get_value))
         {
           /* 13.b.iv */
-          operation_value = ecma_op_object_put_by_uint32_index (obj_p, to, get_value, true);
+          operation_value = ecma_op_object_put_by_uint32_index (obj_p, to, get_value);
           ecma_free_value (get_value);
         }
         else
         {
           /* 13.b.v */
-          operation_value = ecma_op_object_delete_by_uint32_index (obj_p, to, true);
+          operation_value = ecma_op_object_delete_by_uint32_index (obj_p, to);
         }
-
         if (ECMA_IS_VALUE_ERROR (operation_value))
         {
           ecma_deref_object (new_array_p);
+          return operation_value;
+        }
+        if (ecma_is_value_false (operation_value))
+        {
+          ecma_deref_object (new_array_p);
+          operation_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
           return operation_value;
         }
       }
@@ -1462,12 +1521,17 @@ ecma_builtin_array_prototype_object_splice (const ecma_value_t args[], /**< argu
   {
     ecma_value_t put_value = ecma_op_object_put_by_uint32_index (obj_p,
                                                                  (uint32_t) (start + idx),
-                                                                 args[arg_index],
-                                                                 true);
+                                                                 args[arg_index]);
 
     if (ECMA_IS_VALUE_ERROR (put_value))
     {
       ecma_deref_object (new_array_p);
+      return put_value;
+    }
+    if (ecma_is_value_false (put_value))
+    {
+      ecma_deref_object (new_array_p);
+      put_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       return put_value;
     }
   }
@@ -1554,28 +1618,41 @@ ecma_builtin_array_prototype_object_unshift (const ecma_value_t args[], /**< arg
     if (ecma_is_value_found (get_value))
     {
       /* 6.d.i, 6.d.ii */
-      operation_value = ecma_op_object_put_by_number_index (obj_p, new_idx, get_value, true);
+      operation_value = ecma_op_object_put_by_number_index (obj_p, new_idx, get_value);
       ecma_free_value (get_value);
     }
+
     else
     {
       /* 6.e.i */
-      operation_value = ecma_op_object_delete_by_number_index (obj_p, new_idx, true);
+      operation_value = ecma_op_object_delete_by_number_index (obj_p, new_idx);
     }
 
     if (ECMA_IS_VALUE_ERROR (operation_value))
     {
       return operation_value;
     }
+
+    if (ecma_is_value_false (operation_value))
+    {
+      operation_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+      return operation_value;
+    }
+
   }
 
   for (uint32_t arg_index = 0; arg_index < args_number; arg_index++)
   {
     /* 9.b */
-    ecma_value_t put_value = ecma_op_object_put_by_uint32_index (obj_p, arg_index, args[arg_index], true);
+    ecma_value_t put_value = ecma_op_object_put_by_uint32_index (obj_p, arg_index, args[arg_index]);
 
     if (ECMA_IS_VALUE_ERROR (put_value))
     {
+      return put_value;
+    }
+    if (ecma_is_value_false (put_value))
+    {
+      put_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       return put_value;
     }
   }
@@ -2282,11 +2359,16 @@ ecma_builtin_array_prototype_fill (ecma_value_t value, /**< value */
   while (k < final)
   {
     /* 11.a - 11.b */
-    ecma_value_t put_val = ecma_op_object_put_by_number_index (obj_p, k, value, true);
+    ecma_value_t put_val = ecma_op_object_put_by_number_index (obj_p, k, value);
 
     /* 11. c */
     if (ECMA_IS_VALUE_ERROR (put_val))
     {
+      return put_val;
+    }
+    if (ecma_is_value_false (put_val))
+    {
+      put_val = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       return put_val;
     }
 
@@ -2499,17 +2581,21 @@ ecma_builtin_array_prototype_object_copy_within (const ecma_value_t args[], /**<
 
     if (ecma_is_value_found (get_value))
     {
-      op_value = ecma_op_object_put_by_uint32_index (obj_p, target, get_value, true);
+      op_value = ecma_op_object_put_by_uint32_index (obj_p, target, get_value);
     }
     else
     {
-      op_value = ecma_op_object_delete_by_uint32_index (obj_p, target, true);
+      op_value = ecma_op_object_delete_by_uint32_index (obj_p, target);
     }
 
     ecma_free_value (get_value);
-
     if (ECMA_IS_VALUE_ERROR (op_value))
     {
+      return op_value;
+    }
+    if (ecma_is_value_false (op_value))
+    {
+      op_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       return op_value;
     }
 

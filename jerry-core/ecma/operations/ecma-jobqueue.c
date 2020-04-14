@@ -235,12 +235,11 @@ ecma_process_promise_resolve_thenable_job (void *obj_p) /**< the job to be opera
 
   ecma_op_object_put (promise_p,
                       str_resolve_p,
-                      funcs->resolve,
-                      false);
+                      funcs->resolve);
+
   ecma_op_object_put (promise_p,
                       str_reject_p,
-                      funcs->reject,
-                      false);
+                      funcs->reject);
 
   ecma_value_t argv[] = { funcs->resolve, funcs->reject };
   ecma_value_t ret;

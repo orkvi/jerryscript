@@ -942,7 +942,7 @@ ecma_op_array_object_set_length (ecma_object_t *object_p, /**< the array object 
                                  ecma_value_t new_value, /**< new length value */
                                  uint32_t flags) /**< configuration options */
 {
-  bool is_throw = (flags & ECMA_ARRAY_OBJECT_SET_LENGTH_FLAG_IS_THROW);
+  //bool is_throw = (flags & ECMA_ARRAY_OBJECT_SET_LENGTH_FLAG_IS_THROW);
 
   ecma_value_t completion = ecma_op_to_number (new_value);
 
@@ -980,7 +980,7 @@ ecma_op_array_object_set_length (ecma_object_t *object_p, /**< the array object 
 
   if (flags & ECMA_ARRAY_OBJECT_SET_LENGTH_FLAG_REJECT)
   {
-    return ecma_reject (is_throw);
+    return ECMA_VALUE_FALSE;
   }
 
   ecma_extended_object_t *ext_object_p = (ecma_extended_object_t *) object_p;
@@ -999,14 +999,14 @@ ecma_op_array_object_set_length (ecma_object_t *object_p, /**< the array object 
       }
       else if (!ecma_is_property_writable (ext_object_p->u.array.u.length_prop))
       {
-        return ecma_reject (is_throw);
+        return ECMA_VALUE_FALSE;
       }
     }
     return ECMA_VALUE_TRUE;
   }
   else if (!ecma_is_property_writable (ext_object_p->u.array.u.length_prop))
   {
-    return ecma_reject (is_throw);
+    return ECMA_VALUE_FALSE;
   }
 
   uint32_t current_len_uint32 = new_len_uint32;
@@ -1033,7 +1033,7 @@ ecma_op_array_object_set_length (ecma_object_t *object_p, /**< the array object 
   {
     return ECMA_VALUE_TRUE;
   }
-  return ecma_reject (is_throw);
+  return ECMA_VALUE_FALSE;
 } /* ecma_op_array_object_set_length */
 
 /**
@@ -1150,7 +1150,7 @@ ecma_op_array_object_define_own_property (ecma_object_t *object_p, /**< the arra
 
   if (update_length && !ecma_is_property_writable (ext_object_p->u.array.u.length_prop))
   {
-    return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+    return ECMA_VALUE_FALSE;
   }
 
   ecma_property_descriptor_t prop_desc;
@@ -1165,7 +1165,7 @@ ecma_op_array_object_define_own_property (ecma_object_t *object_p, /**< the arra
 
   if (ecma_is_value_false (completition))
   {
-    return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+    return ECMA_VALUE_FALSE;
   }
 
   if (update_length)

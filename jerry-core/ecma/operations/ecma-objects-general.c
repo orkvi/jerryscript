@@ -33,25 +33,6 @@
  */
 
 /**
- * Reject sequence
- *
- * @return ecma value
- *         Returned value must be freed with ecma_free_value
- */
-ecma_value_t
-ecma_reject (bool is_throw) /**< Throw flag */
-{
-  if (is_throw)
-  {
-    return ecma_raise_type_error (ECMA_ERR_MSG ("Invalid argument type."));
-  }
-  else
-  {
-    return ECMA_VALUE_FALSE;
-  }
-} /* ecma_reject */
-
-/**
  * 'Object' object creation operation with no arguments.
  *
  * See also: ECMA-262 v5, 15.2.2.1
@@ -137,8 +118,7 @@ ecma_op_create_object_object_noarg_and_set_prototype (ecma_object_t *object_prot
  */
 ecma_value_t
 ecma_op_general_object_delete (ecma_object_t *obj_p, /**< the object */
-                               ecma_string_t *property_name_p, /**< property name */
-                               bool is_throw) /**< flag that controls failure handling */
+                               ecma_string_t *property_name_p) /**< flag that controls failure handling */
 {
   JERRY_ASSERT (obj_p != NULL
                 && !ecma_is_lexical_environment (obj_p));
@@ -176,10 +156,10 @@ ecma_op_general_object_delete (ecma_object_t *obj_p, /**< the object */
   }
 
   /* 4. */
-  if (is_throw)
+  /*if (is_throw)
   {
     return ecma_raise_type_error (ECMA_ERR_MSG ("Expected a configurable property."));
-  }
+  }*/
 
   /* 5. */
   return ECMA_VALUE_FALSE;
@@ -414,7 +394,7 @@ ecma_op_general_object_define_own_property (ecma_object_t *object_p, /**< the ob
     if (!ecma_op_ordinary_object_is_extensible (object_p))
     {
       /* 2. */
-      return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+      return ECMA_VALUE_FALSE;
     }
 
     /* 4. */
@@ -470,7 +450,7 @@ ecma_op_general_object_define_own_property (ecma_object_t *object_p, /**< the ob
     {
       ecma_free_value (ext_property_ref.property_ref.virtual_value);
     }
-    return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+    return ECMA_VALUE_FALSE;
   }
 
   if (current_property_type == ECMA_PROPERTY_TYPE_VIRTUAL)
@@ -485,7 +465,7 @@ ecma_op_general_object_define_own_property (ecma_object_t *object_p, /**< the ob
             && !ecma_op_same_value (property_desc_p->value,
                                     ext_property_ref.property_ref.virtual_value)))
     {
-      result = ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+      result = ECMA_VALUE_FALSE;
     }
 
     ecma_free_value (ext_property_ref.property_ref.virtual_value);
@@ -511,7 +491,7 @@ ecma_op_general_object_define_own_property (ecma_object_t *object_p, /**< the ob
                     && !ecma_op_same_value (property_desc_p->value,
                                             ext_property_ref.property_ref.value_p->value))))
         {
-          return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+          return ECMA_VALUE_FALSE;
         }
       }
       else
@@ -532,7 +512,7 @@ ecma_op_general_object_define_own_property (ecma_object_t *object_p, /**< the ob
                 && prop_desc_setter_cp != get_set_pair_p->setter_cp))
         {
           /* i., ii. */
-          return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+          return ECMA_VALUE_FALSE;
         }
       }
     }
@@ -543,7 +523,7 @@ ecma_op_general_object_define_own_property (ecma_object_t *object_p, /**< the ob
     if (!is_current_configurable)
     {
       /* a. */
-      return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+      return ECMA_VALUE_FALSE;
     }
 
     ecma_property_value_t *value_p = ext_property_ref.property_ref.value_p;

@@ -49,18 +49,17 @@ ecma_value_t ecma_op_get_method_by_symbol_id (ecma_value_t value, lit_magic_stri
 ecma_value_t ecma_op_get_method_by_magic_id (ecma_value_t value, lit_magic_string_id_t magic_id);
 #endif /* ENABLED (JERRY_ES2015) */
 ecma_value_t ecma_op_object_put_with_receiver (ecma_object_t *object_p, ecma_string_t *property_name_p,
-                                               ecma_value_t value, ecma_value_t receiver, bool is_throw);
-ecma_value_t ecma_op_object_put (ecma_object_t *object_p, ecma_string_t *property_name_p, ecma_value_t value,
-                                 bool is_throw);
+                                               ecma_value_t value, ecma_value_t receiver);
+ecma_value_t ecma_op_object_put (ecma_object_t *object_p, ecma_string_t *property_name_p, ecma_value_t value);
 ecma_value_t ecma_op_object_put_with_receiver (ecma_object_t *object_p, ecma_string_t *property_name_p,
-                                               ecma_value_t value, ecma_value_t receiver, bool is_throw);
+                                               ecma_value_t value, ecma_value_t receiver);
 ecma_value_t ecma_op_object_put_by_uint32_index (ecma_object_t *object_p, uint32_t index,
-                                                 ecma_value_t value, bool is_throw);
+                                                 ecma_value_t value);
 ecma_value_t ecma_op_object_put_by_number_index (ecma_object_t *object_p, ecma_number_t index,
-                                                 ecma_value_t value, bool is_throw);
-ecma_value_t ecma_op_object_delete (ecma_object_t *obj_p, ecma_string_t *property_name_p, bool is_throw);
-ecma_value_t ecma_op_object_delete_by_uint32_index (ecma_object_t *obj_p, uint32_t index, bool is_throw);
-ecma_value_t ecma_op_object_delete_by_number_index (ecma_object_t *obj_p, ecma_number_t index, bool is_throw);
+                                                 ecma_value_t value);
+ecma_value_t ecma_op_object_delete (ecma_object_t *obj_p, ecma_string_t *property_name_p);
+ecma_value_t ecma_op_object_delete_by_uint32_index (ecma_object_t *obj_p, uint32_t index);
+ecma_value_t ecma_op_object_delete_by_number_index (ecma_object_t *obj_p, ecma_number_t index);
 ecma_value_t ecma_op_object_default_value (ecma_object_t *obj_p, ecma_preferred_type_hint_t hint);
 ecma_value_t ecma_op_object_define_own_property (ecma_object_t *obj_p, ecma_string_t *property_name_p,
                                                  const ecma_property_descriptor_t *property_desc_p);

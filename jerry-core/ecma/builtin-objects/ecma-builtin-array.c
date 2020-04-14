@@ -184,14 +184,18 @@ ecma_builtin_array_object_from (ecma_value_t this_arg, /**< 'this' argument */
         ecma_value_t len_value = ecma_make_uint32_value (k);
         ecma_value_t set_status = ecma_op_object_put (array_obj_p,
                                                       ecma_get_magic_string (LIT_MAGIC_STRING_LENGTH),
-                                                      len_value,
-                                                      true);
+                                                      len_value);
         ecma_free_value (len_value);
 
         /* 6.g.iv.2 */
         if (ECMA_IS_VALUE_ERROR (set_status))
         {
           goto iterator_cleanup;
+        }
+        if (ecma_is_value_false (set_status))
+        {
+          set_status = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+          return set_status;
         }
 
         ecma_free_value (iterator);
@@ -371,14 +375,18 @@ iterator_cleanup:
   len_value = ecma_make_uint32_value (k);
   ecma_value_t set_status = ecma_op_object_put (array_obj_p,
                                                 ecma_get_magic_string (LIT_MAGIC_STRING_LENGTH),
-                                                len_value,
-                                                true);
+                                                len_value);
   ecma_free_value (len_value);
 
   /* 18. */
   if (ECMA_IS_VALUE_ERROR (set_status))
   {
     goto construct_cleanup;
+  }
+  if (ecma_is_value_false (set_status))
+  {
+    set_status = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+    return set_status;
   }
 
   /* 19. */
@@ -447,14 +455,18 @@ ecma_builtin_array_object_of (ecma_value_t this_arg, /**< 'this' argument */
 
   ret_val = ecma_op_object_put (obj_p,
                                 ecma_get_magic_string (LIT_MAGIC_STRING_LENGTH),
-                                len,
-                                true);
+                                len);
 
   ecma_free_value (len);
-
   if (ECMA_IS_VALUE_ERROR (ret_val))
   {
     ecma_deref_object (obj_p);
+    return ret_val;
+  }
+  if (ecma_is_value_false (ret_val))
+  {
+    ecma_deref_object (obj_p);
+    ret_val = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
     return ret_val;
   }
 

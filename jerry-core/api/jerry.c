@@ -2168,8 +2168,11 @@ jerry_delete_property (const jerry_value_t obj_val, /**< object value */
   }
 
   ecma_value_t ret_value = ecma_op_object_delete (ecma_get_object_from_value (obj_val),
-                                                  ecma_get_prop_name_from_value (prop_name_val),
-                                                  false);
+                                                  ecma_get_prop_name_from_value (prop_name_val));
+  if (ecma_is_value_false (ret_value))
+  {
+    ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+  }
 
 #if ENABLED (JERRY_ES2015_BUILTIN_PROXY)
   if (ECMA_IS_VALUE_ERROR (ret_value))
@@ -2201,8 +2204,11 @@ jerry_delete_property_by_index (const jerry_value_t obj_val, /**< object value *
 
   ecma_string_t *str_idx_p = ecma_new_ecma_string_from_uint32 (index);
   ecma_value_t ret_value = ecma_op_object_delete (ecma_get_object_from_value (obj_val),
-                                                  str_idx_p,
-                                                  false);
+                                                  str_idx_p);
+  if (ecma_is_value_false (ret_value))
+  {
+    ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+  }
   ecma_deref_ecma_string (str_idx_p);
 
 #if ENABLED (JERRY_ES2015_BUILTIN_PROXY)
@@ -2386,10 +2392,16 @@ jerry_set_property (const jerry_value_t obj_val, /**< object value */
     return jerry_throw (ecma_raise_type_error (ECMA_ERR_MSG (wrong_args_msg_p)));
   }
 
-  return jerry_return (ecma_op_object_put (ecma_get_object_from_value (obj_val),
-                                           ecma_get_prop_name_from_value (prop_name_val),
-                                           value_to_set,
-                                           true));
+  ecma_value_t ret_val = jerry_return (ecma_op_object_put (ecma_get_object_from_value (obj_val),
+                                       ecma_get_prop_name_from_value (prop_name_val),
+                                       value_to_set));
+  if (ecma_is_value_false (ret_val))
+  {
+    ret_val = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+    return ret_val;
+  }
+
+  return  jerry_return (ret_val);
 } /* jerry_set_property */
 
 /**
@@ -2416,8 +2428,13 @@ jerry_set_property_by_index (const jerry_value_t obj_val, /**< object value */
 
   ecma_value_t ret_value = ecma_op_object_put_by_uint32_index (ecma_get_object_from_value (obj_val),
                                                                index,
-                                                               value_to_set,
-                                                               true);
+                                                               value_to_set);
+
+  if (ret_value == ECMA_VALUE_FALSE)
+  {
+    ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+    return ret_value;
+  }
 
   return jerry_return (ret_value);
 } /* jerry_set_property_by_index */

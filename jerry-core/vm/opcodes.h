@@ -93,7 +93,7 @@ void
 opfunc_set_accessor (bool is_getter, ecma_value_t object, ecma_string_t *accessor_name_p, ecma_value_t accessor);
 
 ecma_value_t
-vm_op_delete_prop (ecma_value_t object, ecma_value_t property, bool is_strict);
+vm_op_delete_prop (ecma_value_t object, ecma_value_t property);
 
 ecma_value_t
 vm_op_delete_var (ecma_value_t name_literal, ecma_object_t *lex_env_p);

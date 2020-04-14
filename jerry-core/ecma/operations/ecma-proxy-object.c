@@ -692,7 +692,7 @@ ecma_proxy_object_set (ecma_object_t *obj_p, /**< proxy object */
   /* 8. */
   if (ecma_is_value_undefined (trap))
   {
-    return ecma_op_object_put_with_receiver (target_obj_p, prop_name_p, value, receiver, false);
+    return ecma_op_object_put_with_receiver (target_obj_p, prop_name_p, value, receiver);
   }
 
   ecma_object_t *func_obj_p = ecma_get_object_from_value (trap);
@@ -802,7 +802,7 @@ ecma_proxy_object_delete_property (ecma_object_t *obj_p, /**< proxy object */
   /* 8. */
   if (ecma_is_value_undefined (trap))
   {
-    return ecma_op_object_delete (target_obj_p, prop_name_p, false);
+    return ecma_op_object_delete (target_obj_p, prop_name_p);
   }
 
   ecma_object_t *func_obj_p = ecma_get_object_from_value (trap);

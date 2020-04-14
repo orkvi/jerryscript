@@ -130,7 +130,7 @@ ecma_builtin_reflect_dispatch_routine (uint16_t builtin_routine_id, /**< built-i
 
       case ECMA_REFLECT_OBJECT_DELETE_PROPERTY:
       {
-        ret_value = ecma_op_object_delete (target_p, name_str_p, false);
+        ret_value = ecma_op_object_delete (target_p, name_str_p);
         break;
       }
 
@@ -145,7 +145,7 @@ ecma_builtin_reflect_dispatch_routine (uint16_t builtin_routine_id, /**< built-i
           receiver = arguments_list[3];
         }
 
-        ret_value = ecma_op_object_put_with_receiver (target_p, name_str_p, arguments_list[2], receiver, false);
+        ret_value = ecma_op_object_put_with_receiver (target_p, name_str_p, arguments_list[2], receiver);
         break;
       }
     }

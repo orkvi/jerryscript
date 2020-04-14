@@ -263,12 +263,9 @@ ecma_builtin_promise_all_handler (const ecma_value_t function, /**< the function
   {
     return ECMA_VALUE_UNDEFINED;
   }
-
-  /* 3. */
   ecma_op_object_put (function_p,
                       already_called_str_p,
-                      ECMA_VALUE_TRUE,
-                      false);
+                      ECMA_VALUE_TRUE);
 
   ecma_string_t *str_index_p = ecma_get_magic_string (LIT_INTERNAL_MAGIC_STRING_PROMISE_PROPERTY_INDEX);
   ecma_string_t *str_value_p = ecma_get_magic_string (LIT_INTERNAL_MAGIC_STRING_PROMISE_PROPERTY_VALUE);
@@ -286,8 +283,7 @@ ecma_builtin_promise_all_handler (const ecma_value_t function, /**< the function
   /* 8. */
   ecma_op_object_put_by_uint32_index (ecma_get_object_from_value (values_array),
                                       (uint32_t) ecma_get_integer_from_value (index_val),
-                                      argv[0],
-                                      false);
+                                      argv[0]);
 
   /* 9-10. */
   ecma_value_t ret = ECMA_VALUE_UNDEFINED;
@@ -421,35 +417,30 @@ ecma_builtin_promise_perform_all (ecma_value_t iterator, /**< iteratorRecord */
     /* k. */
     ecma_object_t *res_ele_p;
     res_ele_p = ecma_op_create_external_function_object (ecma_builtin_promise_all_handler);
-    /* l. */
+    /* l.  ide lehet kell ellenőrzés*/
     ecma_op_object_put (res_ele_p,
                         already_called_str_p,
-                        ECMA_VALUE_FALSE,
-                        false);
+                        ECMA_VALUE_FALSE);
     /* m. */
     ecma_value_t idx_value = ecma_make_uint32_value (idx);
     ecma_op_object_put (res_ele_p,
                         index_str_p,
-                        idx_value,
-                        false);
+                        idx_value);
     ecma_free_value (idx_value);
 
     /* n. */
     ecma_op_object_put (res_ele_p,
                         value_str_p,
-                        values_array,
-                        false);
+                        values_array);
 
     /* o. */
     ecma_op_object_put (res_ele_p,
                         capability_str_p,
-                        capability,
-                        false);
+                        capability);
     /* p. */
     ecma_op_object_put (res_ele_p,
                         remaining_str_p,
-                        remaining,
-                        false);
+                        remaining);
 
     /* q. */
     ecma_builtin_promise_remaining_inc_or_dec (remaining, true);

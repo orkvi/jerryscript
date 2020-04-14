@@ -1062,19 +1062,18 @@ ecma_op_get_method_by_magic_id (ecma_value_t value, /**< ecma value */
 ecma_value_t
 ecma_op_object_put_by_uint32_index (ecma_object_t *object_p, /**< the object */
                                     uint32_t index, /**< property index */
-                                    ecma_value_t value, /**< ecma value */
-                                    bool is_throw) /**< flag that controls failure handling */
+                                    ecma_value_t value) /**< flag that controls failure handling */
 {
   if (JERRY_LIKELY (index <= ECMA_DIRECT_STRING_MAX_IMM))
   {
     return ecma_op_object_put (object_p,
                                ECMA_CREATE_DIRECT_UINT32_STRING (index),
-                               value,
-                               is_throw);
+                               value);
   }
 
   ecma_string_t *index_str_p = ecma_new_non_direct_string_from_uint32 (index);
-  ecma_value_t ret_value = ecma_op_object_put (object_p, index_str_p, value, is_throw);
+  ecma_value_t ret_value = ecma_op_object_put (object_p, index_str_p, value);
+
   ecma_deref_ecma_string (index_str_p);
 
   return ret_value;
@@ -1091,11 +1090,10 @@ ecma_op_object_put_by_uint32_index (ecma_object_t *object_p, /**< the object */
 ecma_value_t
 ecma_op_object_put_by_number_index (ecma_object_t *object_p, /**< the object */
                                     ecma_number_t index, /**< property index */
-                                    ecma_value_t value, /**< ecma value */
-                                    bool is_throw) /**< flag that controls failure handling */
+                                    ecma_value_t value) /**< ecma value */
 {
   ecma_string_t *index_str_p = ecma_new_ecma_string_from_number (index);
-  ecma_value_t ret_value = ecma_op_object_put (object_p, index_str_p, value, is_throw);
+  ecma_value_t ret_value = ecma_op_object_put (object_p, index_str_p, value);
   ecma_deref_ecma_string (index_str_p);
 
   return ret_value;
@@ -1122,14 +1120,12 @@ ecma_op_object_put_by_number_index (ecma_object_t *object_p, /**< the object */
 inline ecma_value_t JERRY_ATTR_ALWAYS_INLINE
 ecma_op_object_put (ecma_object_t *object_p, /**< the object */
                     ecma_string_t *property_name_p, /**< property name */
-                    ecma_value_t value, /**< ecma value */
-                    bool is_throw) /**< flag that controls failure handling */
+                    ecma_value_t value) /**< ecma value */
 {
   return ecma_op_object_put_with_receiver (object_p,
                                            property_name_p,
                                            value,
-                                           ecma_make_object_value (object_p),
-                                           is_throw);
+                                           ecma_make_object_value (object_p));
 } /* ecma_op_object_put */
 
 /**
@@ -1154,8 +1150,7 @@ ecma_value_t
 ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
                                   ecma_string_t *property_name_p, /**< property name */
                                   ecma_value_t value, /**< ecma value */
-                                  ecma_value_t receiver, /**< receiver */
-                                  bool is_throw) /**< flag that controls failure handling */
+                                  ecma_value_t receiver)  /**< ecma value */
 {
   JERRY_ASSERT (object_p != NULL
                 && !ecma_is_lexical_environment (object_p));
@@ -1183,14 +1178,14 @@ ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
           return ecma_op_array_object_set_length (object_p, value, 0);
         }
 
-        return ecma_reject (is_throw);
+        return ECMA_VALUE_FALSE;
       }
 
       if (JERRY_LIKELY (ecma_op_array_is_fast_array (ext_object_p)))
       {
         if (JERRY_UNLIKELY (!ecma_op_ordinary_object_is_extensible (object_p)))
         {
-          return ecma_reject (is_throw);
+          return ECMA_VALUE_FALSE;
         }
 
         uint32_t index = ecma_string_get_array_index (property_name_p);
@@ -1258,14 +1253,14 @@ ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
           if (ECMA_IS_VALUE_ERROR (error))
           {
             jcontext_release_exception ();
-            return ecma_reject (is_throw);
+            return ECMA_VALUE_FALSE;
           }
 
           ecma_typedarray_info_t info = ecma_typedarray_get_info (object_p);
 
           if (array_index >= info.length)
           {
-            return ecma_reject (is_throw);
+            return ECMA_VALUE_FALSE;
           }
 
           ecma_length_t byte_pos = array_index << info.shift;
@@ -1281,7 +1276,7 @@ ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
         {
           ecma_deref_ecma_string (num_to_str);
 
-          return ecma_reject (is_throw);
+          return ECMA_VALUE_FALSE;
         }
 
         ecma_deref_ecma_string (num_to_str);
@@ -1314,7 +1309,7 @@ ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
 
           if (index < ecma_string_get_length (prim_value_str_p))
           {
-            return ecma_reject (is_throw);
+            return ECMA_VALUE_FALSE;
           }
         }
       }
@@ -1331,12 +1326,12 @@ ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
       if ((ecma_string_is_length (property_name_p))
           && (!ECMA_GET_FIRST_BIT_FROM_POINTER_TAG (((ecma_extended_object_t *) object_p)->u.function.scope_cp)))
       {
-        return ecma_reject (is_throw);
+        return ECMA_VALUE_FALSE;
       }
 #else /* !ENABLED (JERRY_ES2015) */
       if (ecma_string_is_length (property_name_p))
       {
-        return ecma_reject (is_throw);
+        return ECMA_VALUE_FALSE;
       }
 #endif /* ENABLED (JERRY_ES2015) */
 
@@ -1438,7 +1433,7 @@ ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
         {
           if (!ecma_is_property_writable (ext_object_p->u.array.u.length_prop))
           {
-            return ecma_reject (is_throw);
+            return ECMA_VALUE_FALSE;
           }
 
           ext_object_p->u.array.length = index + 1;
@@ -1459,7 +1454,7 @@ ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
 
   if (setter_cp == JMEM_CP_NULL)
   {
-    return ecma_reject (is_throw);
+    return ECMA_VALUE_FALSE;
   }
 
   ecma_value_t ret_value = ecma_op_function_call (ECMA_GET_NON_NULL_POINTER (ecma_object_t, setter_cp),
@@ -1487,16 +1482,15 @@ ecma_op_object_put_with_receiver (ecma_object_t *object_p, /**< the object */
  */
 ecma_value_t
 ecma_op_object_delete_by_uint32_index (ecma_object_t *obj_p, /**< the object */
-                                       uint32_t index, /**< property index */
-                                       bool is_throw) /**< flag that controls failure handling */
+                                       uint32_t index) /**< flag that controls failure handling */
 {
   if (JERRY_LIKELY (index <= ECMA_DIRECT_STRING_MAX_IMM))
   {
-    return ecma_op_object_delete (obj_p, ECMA_CREATE_DIRECT_UINT32_STRING (index), is_throw);
+    return ecma_op_object_delete (obj_p, ECMA_CREATE_DIRECT_UINT32_STRING (index));
   }
 
   ecma_string_t *index_str_p = ecma_new_non_direct_string_from_uint32 (index);
-  ecma_value_t ret_value = ecma_op_object_delete (obj_p, index_str_p, is_throw);
+  ecma_value_t ret_value = ecma_op_object_delete (obj_p, index_str_p);
   ecma_deref_ecma_string (index_str_p);
 
   return ret_value;
@@ -1513,11 +1507,10 @@ ecma_op_object_delete_by_uint32_index (ecma_object_t *obj_p, /**< the object */
  */
 ecma_value_t
 ecma_op_object_delete_by_number_index (ecma_object_t *obj_p, /**< the object */
-                                       ecma_number_t index, /**< property index */
-                                       bool is_throw) /**< flag that controls failure handling */
+                                       ecma_number_t index) /**< flag that controls failure handling */
 {
   ecma_string_t *index_str_p = ecma_new_ecma_string_from_number (index);
-  ecma_value_t ret_value = ecma_op_object_delete (obj_p, index_str_p, is_throw);
+  ecma_value_t ret_value = ecma_op_object_delete (obj_p, index_str_p);
   ecma_deref_ecma_string (index_str_p);
 
   return ret_value;
@@ -1537,8 +1530,7 @@ ecma_op_object_delete_by_number_index (ecma_object_t *obj_p, /**< the object */
  */
 ecma_value_t
 ecma_op_object_delete (ecma_object_t *obj_p, /**< the object */
-                       ecma_string_t *property_name_p, /**< property name */
-                       bool is_throw) /**< flag that controls failure handling */
+                       ecma_string_t *property_name_p) /**< flag that controls failure handling */
 {
   JERRY_ASSERT (obj_p != NULL
                 && !ecma_is_lexical_environment (obj_p));
@@ -1551,8 +1543,7 @@ ecma_op_object_delete (ecma_object_t *obj_p, /**< the object */
     if (ext_object_p->u.pseudo_array.type == ECMA_PSEUDO_ARRAY_ARGUMENTS)
     {
       return ecma_op_arguments_object_delete (obj_p,
-                                              property_name_p,
-                                              is_throw);
+                                              property_name_p);
     }
   }
 
@@ -1566,8 +1557,7 @@ ecma_op_object_delete (ecma_object_t *obj_p, /**< the object */
   JERRY_ASSERT_OBJECT_TYPE_IS_VALID (ecma_get_object_type (obj_p));
 
   return ecma_op_general_object_delete (obj_p,
-                                        property_name_p,
-                                        is_throw);
+                                        property_name_p);
 } /* ecma_op_object_delete */
 
 /**
@@ -1696,7 +1686,7 @@ ecma_op_object_define_own_property (ecma_object_t *obj_p, /**< the object */
             return ECMA_VALUE_TRUE;
           }
 
-          return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+          return ECMA_VALUE_FALSE;
         }
 
         ecma_number_t num = ecma_string_to_number (property_name_p);
@@ -1706,7 +1696,7 @@ ecma_op_object_define_own_property (ecma_object_t *obj_p, /**< the object */
         {
           ecma_deref_ecma_string (num_to_str);
 
-          return ecma_reject (property_desc_p->flags & ECMA_PROP_IS_THROW);
+          return ECMA_VALUE_FALSE;
         }
 
         ecma_deref_ecma_string (num_to_str);

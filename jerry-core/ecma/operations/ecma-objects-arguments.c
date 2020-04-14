@@ -312,11 +312,10 @@ ecma_op_arguments_object_define_own_property (ecma_object_t *object_p, /**< the 
  */
 ecma_value_t
 ecma_op_arguments_object_delete (ecma_object_t *object_p, /**< the object */
-                                 ecma_string_t *property_name_p, /**< property name */
-                                 bool is_throw) /**< flag that controls failure handling */
+                                 ecma_string_t *property_name_p) /**< flag that controls failure handling */
 {
   /* 3. */
-  ecma_value_t ret_value = ecma_op_general_object_delete (object_p, property_name_p, is_throw);
+  ecma_value_t ret_value = ecma_op_general_object_delete (object_p, property_name_p);
 
   if (ECMA_IS_VALUE_ERROR (ret_value))
   {

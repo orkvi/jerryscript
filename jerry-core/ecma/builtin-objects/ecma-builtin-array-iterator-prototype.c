@@ -103,8 +103,17 @@ ecma_builtin_array_iterator_prototype_object_next (ecma_value_t this_val) /**< t
 
     ecma_value_t put_result = ecma_op_object_put (obj_p,
                                                   prop_name_p,
-                                                  ecma_make_uint32_value (index),
-                                                  true);
+                                                  ecma_make_uint32_value (index));
+
+    if (ECMA_IS_VALUE_ERROR (put_result))
+    {
+      return put_result;
+    }
+    if (put_result == ECMA_VALUE_FALSE)
+    {
+      put_result = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+      return put_result;
+    }
 
     JERRY_ASSERT (ecma_is_value_true (put_result));
 

@@ -1319,8 +1319,11 @@ ecma_regexp_exec_helper (ecma_object_t *regexp_object_p, /**< RegExp object */
     {
       ret_value = ecma_op_object_put (regexp_object_p,
                                       lastindex_str_p,
-                                      ecma_make_integer_value (0),
-                                      true);
+                                      ecma_make_integer_value (0));
+      if (ecma_is_value_false (ret_value))
+      {
+        ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+      }
 
       if (!ECMA_IS_VALUE_ERROR (ret_value))
       {
@@ -1375,11 +1378,16 @@ ecma_regexp_exec_helper (ecma_object_t *regexp_object_p, /**< RegExp object */
     {
       ecma_value_t put_result = ecma_op_object_put (regexp_object_p,
                                                     ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                                    ecma_make_uint32_value (0),
-                                                    true);
+                                                    ecma_make_uint32_value (0));
+
       if (ECMA_IS_VALUE_ERROR (put_result))
       {
         ret_value = put_result;
+        goto cleanup_context;
+      }
+      if (ecma_is_value_false (put_result))
+      {
+        ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
         goto cleanup_context;
       }
 
@@ -1395,11 +1403,16 @@ ecma_regexp_exec_helper (ecma_object_t *regexp_object_p, /**< RegExp object */
       {
         ecma_value_t put_result = ecma_op_object_put (regexp_object_p,
                                                       ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                                      ecma_make_uint32_value (0),
-                                                      true);
+                                                      ecma_make_uint32_value (0));
+
         if (ECMA_IS_VALUE_ERROR (put_result))
         {
           ret_value = put_result;
+          goto cleanup_context;
+        }
+        if (ecma_is_value_false (put_result))
+        {
+          ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
           goto cleanup_context;
         }
 
@@ -1461,11 +1474,16 @@ ecma_regexp_exec_helper (ecma_object_t *regexp_object_p, /**< RegExp object */
 
     ecma_value_t put_result = ecma_op_object_put (regexp_object_p,
                                                   ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                                  ecma_make_uint32_value (index + match_length),
-                                                  true);
+                                                  ecma_make_uint32_value (index + match_length));
+
     if (ECMA_IS_VALUE_ERROR (put_result))
     {
       ret_value = put_result;
+      goto cleanup_context;
+    }
+    if (ecma_is_value_false (put_result))
+    {
+      ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       goto cleanup_context;
     }
 
@@ -1549,11 +1567,11 @@ ecma_regexp_search_helper (ecma_value_t regexp_arg, /**< regexp argument */
   }
 
   /* 7-8. */
-  const ecma_value_t status = ecma_op_object_put (regexp_object_p, last_index_str_p, ecma_make_uint32_value (0), true);
-  if (ECMA_IS_VALUE_ERROR (status))
+  const ecma_value_t status = ecma_op_object_put (regexp_object_p, last_index_str_p, ecma_make_uint32_value (0));
+  if (ecma_is_value_false (status))
   {
     ecma_free_value (prev_last_index);
-    goto cleanup_string;
+    return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
   }
 
   JERRY_ASSERT (ecma_is_value_boolean (status));
@@ -1567,13 +1585,19 @@ ecma_regexp_search_helper (ecma_value_t regexp_arg, /**< regexp argument */
   }
 
   /* 11-12. */
-  result = ecma_op_object_put (regexp_object_p, last_index_str_p, prev_last_index, true);
+  result = ecma_op_object_put (regexp_object_p, last_index_str_p, prev_last_index);
   ecma_free_value (prev_last_index);
 
   if (ECMA_IS_VALUE_ERROR (result))
   {
     ecma_free_value (match);
-    goto cleanup_string;
+    return result;
+  }
+  if (ecma_is_value_false (result))
+  {
+    ecma_free_value (match);
+    result = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+    return result;
   }
 
   /* 13-14. */
@@ -1769,12 +1793,14 @@ ecma_regexp_split_helper (ecma_value_t this_arg, /**< this value */
     /* 24.a-b. */
     result = ecma_op_object_put (splitter_obj_p,
                                  lastindex_str_p,
-                                 ecma_make_uint32_value (current_index),
-                                 true);
-
+                                 ecma_make_uint32_value (current_index));
     if (ECMA_IS_VALUE_ERROR (result))
     {
-      goto cleanup_array;
+      return result;
+    }
+    if (ecma_is_value_false (result))
+    {
+      return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
     }
 
     JERRY_ASSERT (ecma_is_value_true (result));
@@ -2390,11 +2416,14 @@ ecma_regexp_replace_helper (ecma_value_t this_arg, /**< this argument */
 
     result = ecma_op_object_put (this_obj_p,
                                  ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                 ecma_make_uint32_value (0),
-                                 true);
+                                 ecma_make_uint32_value (0));
     if (ECMA_IS_VALUE_ERROR (result))
     {
-      goto cleanup_replace;
+      return result;
+    }
+    if (ecma_is_value_false (result))
+    {
+      return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
     }
 
     JERRY_ASSERT (ecma_is_value_boolean (result));
@@ -2467,11 +2496,18 @@ ecma_regexp_replace_helper (ecma_value_t this_arg, /**< this argument */
         if (replace_ctx.index > string_length)
         {
           ecma_deref_object ((ecma_object_t *) function_p);
-
           result = ecma_op_object_put (this_obj_p,
                                        ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                       ecma_make_uint32_value (0),
-                                       true);
+                                       ecma_make_uint32_value (0));
+
+          if (ECMA_IS_VALUE_ERROR (result))
+          {
+            return result;
+          }
+          if (ecma_is_value_false (result))
+          {
+            return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
+          }
           JERRY_ASSERT (ecma_is_value_true (result));
 
           ecma_ref_ecma_string (string_p);
@@ -2589,13 +2625,14 @@ ecma_regexp_replace_helper (ecma_value_t this_arg, /**< this argument */
 
       /* 10.d.iii.3.c */
       result = ecma_op_object_put (this_obj_p,
-                                   ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                   ecma_make_uint32_value (index),
-                                   true);
-
+                                   ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL), ecma_make_uint32_value (0));
       if (ECMA_IS_VALUE_ERROR (result))
       {
-        goto cleanup_results;
+        return result;
+      }
+      if (ecma_is_value_false (result))
+      {
+        return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       }
 
       JERRY_ASSERT (ecma_is_value_boolean (result));
@@ -2900,12 +2937,16 @@ ecma_regexp_match_helper (ecma_value_t this_arg, /**< this argument */
 
   ecma_value_t set_status = ecma_op_object_put (obj_p,
                                                 ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                                ecma_make_uint32_value (0),
-                                                true);
-
+                                                ecma_make_uint32_value (0));
   if (ECMA_IS_VALUE_ERROR (set_status))
   {
     ecma_deref_ecma_string (str_p);
+    return set_status;
+  }
+  if (ecma_is_value_false (set_status))
+  {
+    ecma_deref_ecma_string (str_p);
+    set_status = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
     return set_status;
   }
 
@@ -2985,22 +3026,23 @@ ecma_regexp_match_helper (ecma_value_t this_arg, /**< this argument */
 
       ecma_value_t next_set_status = ecma_op_object_put (obj_p,
                                                          ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                                         ecma_make_uint32_value (next_index),
-                                                         true);
+                                                         ecma_make_uint32_value (next_index));
 #else /* !ENABLED (JERRY_ES2015) */
       ecma_number_t next_index = ecma_get_number_from_value (this_index);
 
       ecma_value_t next_set_status = ecma_op_object_put (obj_p,
                                                          ecma_get_magic_string (LIT_MAGIC_STRING_LASTINDEX_UL),
-                                                         ecma_make_number_value (next_index + 1),
-                                                         true);
+                                                         ecma_make_number_value (next_index + 1));
 
       ecma_free_value (this_index);
 #endif /* ENABLED (JERRY_ES2015) */
-
       if (ECMA_IS_VALUE_ERROR (next_set_status))
       {
-        goto match_cleanup;
+        return next_set_status;
+      }
+      if (ecma_is_value_false (next_set_status))
+      {
+        return ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
       }
     }
 

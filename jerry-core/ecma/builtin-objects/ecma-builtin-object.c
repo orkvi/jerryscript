@@ -966,12 +966,16 @@ ecma_builtin_object_object_assign (ecma_object_t *target_p, /**< target object *
         else
         {
           /* 5.c.iii.3 */
-          ecma_value_t status = ecma_op_object_put (target_p, property_name_p, prop_value, true);
+          ecma_value_t status = ecma_op_object_put (target_p, property_name_p, prop_value);
 
           /* 5.c.iii.4 */
           if (ECMA_IS_VALUE_ERROR (status))
           {
             ret_value = status;
+          }
+          if (ecma_is_value_false (status))
+          {
+            ret_value = ecma_raise_type_error (ECMA_ERR_MSG ("Failed to set property"));
           }
         }
 

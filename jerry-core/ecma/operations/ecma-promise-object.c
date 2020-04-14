@@ -396,13 +396,11 @@ ecma_call_builtin_executor (ecma_object_t *executor_p, /**< the executor object 
   /* 5. */
   ecma_op_object_put (ecma_get_object_from_value (capability),
                       resolve_str_p,
-                      resolve_func,
-                      false);
+                      resolve_func);
   /* 6. */
   ecma_op_object_put (ecma_get_object_from_value (capability),
                       reject_str_p,
-                      reject_func,
-                      false);
+                      reject_func);
 
   ecma_free_value (capability);
 
@@ -427,13 +425,11 @@ ecma_promise_create_resolving_functions_helper (ecma_object_t *obj_p, /**< Promi
 
   ecma_op_object_put (func_obj_p,
                       str_promise_p,
-                      ecma_make_object_value (obj_p),
-                      false);
+                      ecma_make_object_value (obj_p));
 
   ecma_op_object_put (func_obj_p,
                       str_already_resolved_p,
-                      already_resolved,
-                      false);
+                      already_resolved);
 
   return func_obj_p;
 } /* ecma_promise_create_resolving_functions_helper */
@@ -518,12 +514,10 @@ ecma_op_create_promise_object (ecma_value_t executor, /**< the executor function
 
   ecma_op_object_put (object_p,
                       str_resolve_p,
-                      funcs->resolve,
-                      false);
+                      funcs->resolve);
   ecma_op_object_put (object_p,
                       str_reject_p,
-                      funcs->reject,
-                      false);
+                      funcs->reject);
 
   /* 9. */
   ecma_value_t completion = ECMA_VALUE_UNDEFINED;
@@ -630,14 +624,12 @@ ecma_op_get_capabilities_executor_cb (const ecma_value_t function_obj, /**< the 
   /* 5. */
   ecma_op_object_put (capability_obj_p,
                       ecma_get_magic_string (LIT_INTERNAL_MAGIC_STRING_PROMISE_PROPERTY_RESOLVE),
-                      args_count > 0 ? args_p[0] : ECMA_VALUE_UNDEFINED,
-                      false);
+                      args_count > 0 ? args_p[0] : ECMA_VALUE_UNDEFINED);
 
   /* 6. */
   ecma_op_object_put (capability_obj_p,
                       ecma_get_magic_string (LIT_INTERNAL_MAGIC_STRING_PROMISE_PROPERTY_REJECT),
-                      args_count > 1 ? args_p[1] : ECMA_VALUE_UNDEFINED,
-                      false);
+                      args_count > 1 ? args_p[1] : ECMA_VALUE_UNDEFINED);
 
   ecma_deref_object (capability_obj_p);
 
@@ -674,8 +666,7 @@ ecma_promise_new_capability (ecma_value_t constructor)
   /* 5. */
   ecma_op_object_put (executor_p,
                       capability_str_p,
-                      ecma_make_object_value (capability_p),
-                      false);
+                      ecma_make_object_value (capability_p));
 
   /* 6. */
   ecma_value_t promise = ecma_op_function_construct (constructor_obj_p,
@@ -694,8 +685,7 @@ ecma_promise_new_capability (ecma_value_t constructor)
   /* 10. */
   ecma_op_object_put (capability_p,
                       promise_str_p,
-                      promise,
-                      false);
+                      promise);
 
   ecma_free_value (promise);
 
@@ -842,21 +832,17 @@ ecma_promise_do_then (ecma_value_t promise, /**< the promise which call 'then' *
   ecma_object_t *reject_reaction_p = ecma_op_create_object_object_noarg ();
   ecma_op_object_put (fulfill_reaction_p,
                       capability_str_p,
-                      result_capability,
-                      false);
+                      result_capability);
   ecma_op_object_put (fulfill_reaction_p,
                       handler_str_p,
-                      on_fulfilled,
-                      false);
+                      on_fulfilled);
 
   ecma_op_object_put (reject_reaction_p,
                       capability_str_p,
-                      result_capability,
-                      false);
+                      result_capability);
   ecma_op_object_put (reject_reaction_p,
                       handler_str_p,
-                      on_rejected,
-                      false);
+                      on_rejected);
 
   ecma_object_t *obj_p = ecma_get_object_from_value (promise);
   ecma_promise_object_t *promise_p = (ecma_promise_object_t *) obj_p;
