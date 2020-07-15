@@ -1168,7 +1168,9 @@ ecma_builtin_json_serialize_property (ecma_json_stringify_context_t *context_p, 
     /* 5.a */
     if (class_name == LIT_MAGIC_STRING_NUMBER_UL)
     {
-      result = ecma_op_to_number (value);
+      ecma_number_t arg;
+      ecma_get_number (value, &arg);
+      result = ecma_make_number_value (arg);
     }
     /* 5.b */
     else if (class_name == LIT_MAGIC_STRING_STRING_UL)
@@ -1459,7 +1461,9 @@ ecma_builtin_json_stringify (ecma_value_t this_arg, /**< 'this' argument */
     /* 5.a */
     if (class_name == LIT_MAGIC_STRING_NUMBER_UL)
     {
-      ecma_value_t value = ecma_op_to_number (arg3);
+      ecma_number_t arg;
+      ecma_get_number (arg3, &arg);
+      ecma_value_t value = ecma_make_number_value (arg);
 
       if (ECMA_IS_VALUE_ERROR (value))
       {

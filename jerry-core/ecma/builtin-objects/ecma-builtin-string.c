@@ -290,7 +290,9 @@ ecma_builtin_string_object_from_code_point (ecma_value_t this_arg, /**< 'this' a
 
   for (ecma_length_t index = 0; index < args_number; index++)
   {
-    ecma_value_t to_number_value = ecma_op_to_number (args[index]);
+    ecma_number_t arg;
+    ecma_get_number (args[index], &arg);
+    ecma_value_t to_number_value = ecma_make_number_value (arg);
 
     if (ECMA_IS_VALUE_ERROR (to_number_value))
     {

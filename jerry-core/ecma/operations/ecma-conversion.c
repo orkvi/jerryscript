@@ -292,8 +292,9 @@ ecma_op_to_number (ecma_value_t value) /**< ecma value */
     {
       return primitive_value;
     }
-
-    ecma_value_t ret_value = ecma_op_to_number (primitive_value);
+    ecma_number_t arg;
+    ecma_get_number (primitive_value, &arg);
+    ecma_value_t ret_value = ecma_make_number_value (arg);
     ecma_fast_free_value (primitive_value);
     return ret_value;
   }

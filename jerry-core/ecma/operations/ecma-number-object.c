@@ -41,7 +41,8 @@
 ecma_value_t
 ecma_op_create_number_object (ecma_value_t arg) /**< argument passed to the Number constructor */
 {
-  ecma_value_t conv_to_num_completion = ecma_op_to_number (arg);
+  ecma_number_t num;
+  ecma_value_t conv_to_num_completion = ecma_get_number (arg, &num);
 
   if (ECMA_IS_VALUE_ERROR (conv_to_num_completion))
   {
@@ -62,7 +63,7 @@ ecma_op_create_number_object (ecma_value_t arg) /**< argument passed to the Numb
   ext_object_p->u.class_prop.class_id = LIT_MAGIC_STRING_NUMBER_UL;
 
   /* Pass reference (no need to free conv_to_num_completion). */
-  ext_object_p->u.class_prop.u.value = conv_to_num_completion;
+  ext_object_p->u.class_prop.u.value = ecma_make_number_value (num);
 
   return ecma_make_object_value (object_p);
 } /* ecma_op_create_number_object */

@@ -401,7 +401,9 @@ ecma_builtin_date_prototype_dispatch_set (uint16_t builtin_routine_id, /**< buil
 
   for (ecma_length_t i = 0; i < conversions; i++)
   {
-    ecma_value_t value = ecma_op_to_number (arguments_list[i]);
+    ecma_number_t arg;
+    ecma_get_number (arguments_list[i], &arg);
+    ecma_value_t value = ecma_make_number_value (arg);
 
     if (ECMA_IS_VALUE_ERROR (value))
     {

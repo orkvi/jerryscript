@@ -111,7 +111,9 @@ ecma_op_abstract_equality_compare (ecma_value_t x, /**< first operand */
     if (ecma_is_value_number (y))
     {
       /* 4. */
-      ecma_value_t x_num_value = ecma_op_to_number (x);
+      ecma_number_t arg;
+      ecma_get_number (x, &arg);
+      ecma_value_t x_num_value = ecma_make_number_value (arg);
 
       if (ECMA_IS_VALUE_ERROR (x_num_value))
       {

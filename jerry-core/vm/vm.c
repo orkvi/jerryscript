@@ -2372,7 +2372,9 @@ vm_loop (vm_frame_ctx_t *frame_ctx_p) /**< frame context */
           }
           else
           {
-            result = ecma_op_to_number (left_value);
+            ecma_number_t arg;
+            ecma_get_number (left_value, &arg);
+            result = ecma_make_number_value (arg);
 
             if (ECMA_IS_VALUE_ERROR (result))
             {

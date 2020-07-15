@@ -1248,8 +1248,9 @@ jerry_value_to_number (const jerry_value_t value) /**< input value */
   {
     return jerry_throw (ecma_raise_type_error (ECMA_ERR_MSG (error_value_msg_p)));
   }
-
-  return jerry_return (ecma_op_to_number (value));
+  ecma_number_t arg;
+  ecma_get_number (value, &arg);
+  return jerry_return (ecma_make_number_value (arg));
 } /* jerry_value_to_number */
 
 /**

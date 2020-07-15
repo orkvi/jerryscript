@@ -108,6 +108,7 @@ ecma_builtin_math_object_max_min (bool is_max, /**< 'max' or 'min' operation */
   while (args_number > 0)
   {
     ecma_number_t arg_num;
+    ecma_number_t arg0;
 
     if (ecma_is_value_number (*arg))
     {
@@ -115,7 +116,8 @@ ecma_builtin_math_object_max_min (bool is_max, /**< 'max' or 'min' operation */
     }
     else
     {
-      ecma_value_t value = ecma_op_to_number (*arg);
+      ecma_get_number (*arg, &arg0);
+      ecma_value_t value = ecma_make_number_value (arg0);
 
       if (ECMA_IS_VALUE_ERROR (value))
       {
@@ -267,7 +269,9 @@ ecma_builtin_math_dispatch_routine (uint16_t builtin_routine_id, /**< built-in w
       }
       else
       {
-        ecma_value_t value = ecma_op_to_number (arguments_list[0]);
+        ecma_number_t arg;
+        ecma_get_number (arguments_list[0], &arg);
+        ecma_value_t value = ecma_make_number_value (arg);
 
         if (ECMA_IS_VALUE_ERROR (value))
         {
@@ -289,7 +293,9 @@ ecma_builtin_math_dispatch_routine (uint16_t builtin_routine_id, /**< built-in w
       }
       else
       {
-        ecma_value_t value = ecma_op_to_number (arguments_list[1]);
+        ecma_number_t arg1;
+        ecma_get_number (arguments_list[1], &arg1);
+        ecma_value_t value = ecma_make_number_value (arg1);
 
         if (ECMA_IS_VALUE_ERROR (value))
         {
