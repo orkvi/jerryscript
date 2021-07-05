@@ -25,6 +25,20 @@
 #define ECMA_BUILTINS_INTERNAL
 #include "ecma-builtins-internal.h"
 
+/**
+ * This object has a custom dispatch function.
+ */
+#define BUILTIN_CUSTOM_DISPATCH
+
+/**
+ * List of built-in routine identifiers.
+ */
+enum
+{
+  ECMA_BUILTIN_REGEXP_STRING_ITERATOR_PROTOTYPE_ROUTINE_START = 0,
+  ECMA_BUILTIN_REGEXP_STRING_ITERATOR_PROTOTYPE_OBJECT_NEXT,
+};
+
 #define BUILTIN_INC_HEADER_NAME "ecma-builtin-regexp-string-iterator-prototype.inc.h"
 #define BUILTIN_UNDERSCORED_ID regexp_string_iterator_prototype
 #include "ecma-builtin-internal-routines-template.inc.h"
@@ -179,6 +193,36 @@ free_variables:
 
   return result;
 } /* ecma_builtin_regexp_string_iterator_prototype_object_next */
+
+/**
+ * Dispatcher of the built-in's routines
+ *
+ * @return ecma value
+ *         Returned value must be freed with ecma_free_value.
+ */
+ecma_value_t
+ecma_builtin_regexp_string_iterator_prototype_dispatch_routine (uint8_t builtin_routine_id, /**< built-in wide
+                                                                                   *   routine identifier */
+                                                      ecma_value_t this_arg, /**< 'this' argument value */
+                                                      const ecma_value_t arguments_list_p[], /**< list of arguments
+                                                                                              *   passed to routine */
+                                                      uint32_t arguments_number) /**< length of arguments' list */
+{
+  JERRY_UNUSED (arguments_list_p);
+  JERRY_UNUSED (arguments_number);
+
+  switch (builtin_routine_id)
+  {
+    case ECMA_BUILTIN_REGEXP_STRING_ITERATOR_PROTOTYPE_OBJECT_NEXT:
+    {
+      return ecma_builtin_regexp_string_iterator_prototype_object_next (this_arg);
+    }
+    default:
+    {
+      JERRY_UNREACHABLE ();
+    }
+  }
+} /* ecma_builtin_regexp_string_iterator_prototype_dispatch_routine */
 
 /**
  * @}
