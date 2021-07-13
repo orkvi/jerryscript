@@ -31,6 +31,21 @@
 #define ECMA_BUILTINS_INTERNAL
 #include "ecma-builtins-internal.h"
 
+/**
+ * This object has a custom dispatch function.
+ */
+#define BUILTIN_CUSTOM_DISPATCH
+
+/**
+ * List of built-in routine identifiers.
+ */
+enum
+{
+  ECMA_BUILTIN_SYMBOL_ROUTINE_START = 0,
+  ECMA_BUILTIN_SYMBOL_FOR,
+  ECMA_BUILTIN_SYMBOL_KEY_FOR,
+};
+
 #define BUILTIN_INC_HEADER_NAME "ecma-builtin-symbol.inc.h"
 #define BUILTIN_UNDERSCORED_ID symbol
 #include "ecma-builtin-internal-routines-template.inc.h"
@@ -208,10 +223,8 @@ ecma_builtin_symbol_for_helper (ecma_value_t value_to_find) /**< symbol or ecma-
  *         Returned value must be freed with ecma_free_value.
  */
 static ecma_value_t
-ecma_builtin_symbol_for (ecma_value_t this_arg, /**< this argument */
-                         ecma_value_t key) /**< key string */
+ecma_builtin_symbol_for (ecma_value_t key) /**< key string */
 {
-  JERRY_UNUSED (this_arg);
   ecma_string_t *string_desc_p = ecma_op_to_string (key);
 
   /* 1. */
@@ -234,11 +247,8 @@ ecma_builtin_symbol_for (ecma_value_t this_arg, /**< this argument */
  *         Returned value must be freed with ecma_free_value.
  */
 static ecma_value_t
-ecma_builtin_symbol_key_for (ecma_value_t this_arg, /**< this argument */
-                             ecma_value_t symbol) /**< symbol */
+ecma_builtin_symbol_key_for (ecma_value_t symbol) /**< symbol */
 {
-  JERRY_UNUSED (this_arg);
-
   /* 1. */
   if (!ecma_is_value_symbol (symbol))
   {
@@ -249,6 +259,38 @@ ecma_builtin_symbol_key_for (ecma_value_t this_arg, /**< this argument */
   return ecma_builtin_symbol_for_helper (symbol);
 } /* ecma_builtin_symbol_key_for */
 
+/**
+ * Dispatcher of the built-in's routines
+ *
+ * @return ecma value
+ *         Returned value must be freed with ecma_free_value.
+ */
+ecma_value_t
+ecma_builtin_symbol_dispatch_routine (uint8_t builtin_routine_id, /**< built-in wide routine identifier */
+                                      ecma_value_t this_arg, /**< 'this' argument value */
+                                      const ecma_value_t arguments_list_p[], /**< list of arguments
+                                                                              *   passed to routine */
+                                      uint32_t arguments_number) /**< length of arguments' list */
+{
+  JERRY_UNUSED (this_arg);
+  JERRY_UNUSED (arguments_number);
+
+  switch (builtin_routine_id)
+  {
+    case  ECMA_BUILTIN_SYMBOL_FOR:
+    {
+      return ecma_builtin_symbol_for (arguments_list_p[0]);
+    }
+    case ECMA_BUILTIN_SYMBOL_KEY_FOR:
+    {
+      return ecma_builtin_symbol_key_for (arguments_list_p[0]);
+    }
+    default:
+    {
+      JERRY_UNREACHABLE ();
+    }
+  }
+} /* ecma_builtin_symbol_dispatch_routine */
 /**
  * @}
  * @}
